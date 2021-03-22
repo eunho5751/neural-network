@@ -11,9 +11,9 @@ class Metrics(metaclass=ABCMeta):
 
 class CategoricalAccuracy(Metrics):
     def result(self, y_true, y_pred):
-        true_indices = np.argmax(y_true, axis=1) if y_true.shape[1] > 1 else y_true.flatten()
+        true_indices = y_true if y_true.ndim == 1 else (np.argmax(y_true, axis=1) if y_true.shape[1] > 1 else y_true.flatten())
         pred_indices = np.argmax(y_pred, axis=1)
-        acc = np.sum(true_indices == pred_indices) / y_true.shape[0]
+        acc = np.sum(true_indices == pred_indices) / true_indices.shape[0]
         return acc
 
 

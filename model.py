@@ -38,11 +38,12 @@ class Model:
                 y_train = np.delete(y_train, batch_mask, axis=0)
 
                 # train
-                self.__forward(x_batch, y_batch)
+                y_pred = self.__forward(x_batch)
+                loss = self.loss.forward(y_pred, y_batch)
                 self.__backward()
 
                 # evaluate
-                loss, metrics = self.__evaluate(x_batch, y_batch)
+                metrics = self.metrics.result(y_batch, y_pred)
                 total_loss += loss
                 total_metrics += metrics
 
@@ -73,7 +74,9 @@ class Model:
             x_eval = np.delete(x_eval, batch_mask, axis=0)
             y_eval = np.delete(y_eval, batch_mask, axis=0)
 
-            loss, metrics = self.__evaluate(x_batch, y_batch)
+            pred = self.predict(x_batch)
+            loss = self.loss.forward(pred, y_batch)
+            metrics = self.metrics.result(y_batch, pred)
             total_loss += loss
             total_metrics += metrics
 
@@ -82,10 +85,10 @@ class Model:
         self.__print_eval(avg_loss, avg_metrics)
         return avg_loss, avg_metrics
 
-    def __forward(self, x, y):
+    def __forward(self, x):
         for layer in self.layers.values():
             x = layer.forward(x)
-        return self.loss.forward(x, y)
+        return x
 
     def __backward(self):
         layers = list(self.layers.values())
@@ -94,14 +97,7 @@ class Model:
         dout = self.loss.backward()
         for layer in layers:
             dout = layer.backward(dout)
-
         self.optimizer.update(self.optimizable_layers)
-
-    def __evaluate(self, x, y):
-        pred = self.predict(x)
-        loss = self.loss.forward(pred, y)
-        metrics = self.metrics.result(y, pred)
-        return loss, metrics
 
     def __print_eval(self, loss, metrics):
         print(f'loss: {loss:0.4f} / metrics: {metrics:0.4f}')
