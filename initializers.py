@@ -13,3 +13,13 @@ class RandomNormal:
 class Zeros:
     def __call__(self, shape):
         return np.zeros(shape)
+
+
+class Xavier:
+    def __call__(self, shape):
+        return np.random.randn(*shape) * np.sqrt(1 / shape[0])
+
+
+class He:
+    def __call__(self, shape):
+        return np.random.randn(*shape) * np.sqrt(2 / shape[0])
